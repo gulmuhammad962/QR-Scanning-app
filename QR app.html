@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>QR Code Reader</title>
+    <style>
+        body {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            margin: 0;
+        }
+        #video-container {
+            position: relative;
+            width: 100%;
+            max-width: 600px;
+        }
+        #video {
+            width: 100%;
+            height: auto;
+        }
+        #overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+        }
+        #result {
+            text-align: center;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div id="video-container">
+        <video id="video" playsinline></video>
+        <canvas id="overlay"></canvas>
+    </div>
+    <div id="result"></div>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            const video = document.getElementById('video');
+            const overlay = document.getElementById('overlay');
+            const resultDiv = document.getElementById('result');
+
+            navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } })
+                .then(function (stream) {
+                    video.srcObject = stream;
+                    video.play();
+                })
+                .catch(function (error) {
+                    console.error("Error accessing the camera: ", error);
+                });
+
+            const qrScanner = new window.qrcodeQrScanner(video, function (result) {
+                resultDiv.innerText = `QR Code detected: ${result}`;
+            });
+
+            qrScanner.start();
+
+            // Overlay drawing
+            qrScanner.onDraw = function(ctx, canvas) {
+                ctx.strokeStyle = 'green';
+                ctx.lineWidth = 4;
+                ctx.beginPath();
+                ctx.moveTo(50, 50);
+                ctx.lineTo(150, 50);
+                ctx.lineTo(150, 150);
+                ctx.lineTo(50, 150);
+                ctx.closePath();
+                ctx.stroke();
+            };
+        });
+    </script>
+
+    <script src="https://rawgit.com/dwa012/html5-qrcode/master/src/html5-qrcode.min.js"></script>
+</body>
+</html>
